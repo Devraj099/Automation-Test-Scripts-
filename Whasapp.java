@@ -32,7 +32,7 @@ public class Whasapp {
                 By.xpath("//div[@contenteditable='true'][@data-tab='3']")));
 
             // Search for contact/group
-            String contactName = "Revati"; // Change this
+            String contactName = "Contact Name"; // Change this
             WebElement searchBox = driver.findElement(
                 By.xpath("//div[@contenteditable='true'][@data-tab='3']"));
             searchBox.click();
