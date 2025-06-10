@@ -1,147 +1,258 @@
 package Orange;
 
 import org.openqa.selenium.By;
-
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.JavascriptExecutor;
+import java.time.Duration;
+import java.util.List;
 
 public class Orange {
-    public static void main(String[] args) throws InterruptedException {
-        // Set up ChromeDriver
+    private static WebDriver driver;
+    private static WebDriverWait wait;
+    
+    public static void main(String[] args) {
+        // Set up FirefoxDriver
     	System.setProperty("webdriver.firefox.driver", "C:\\selenium webdrivers\\geckodriver.exe");
-        WebDriver driver = new FirefoxDriver();
+    	driver = new FirefoxDriver();
+        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         
         try {
             // Navigate to OrangeHRM
-            driver.get("https://opensource-demo.orangehrmlive.com/");
-            //driver.manage().window().maximize();
-            Thread.sleep(2000);  // Wait for page to load
+            driver.get("https://opensource-demo.orangehrmlive.com/web/index.php/auth/login");
+            driver.manage().window().maximize();
             
             // Login
-            WebElement username = driver.findElement(By.name("username"));
-            WebElement password = driver.findElement(By.name("password"));
-            WebElement loginButton = driver.findElement(By.xpath("//button[@type='submit']"));
+            login();
             
-            username.sendKeys("Admin");
-            password.sendKeys("admin123");
-            loginButton.click();
+            // Test different modules
+            testPIMModule();
+            testLeaveModule();
+            testRecruitmentModule();
+            testDirectoryModule();
             
-            Thread.sleep(2000);  // Wait for dashboard to load
-            
-            // Verify login success
-            WebElement dashboardHeader = driver.findElement(By.xpath("//h6[text()='Dashboard']"));
-            if(dashboardHeader.isDisplayed()) {
-                System.out.println("Login successful!");
-            } else {
-                System.out.println("Login failed!");
-            }
-            
-            // Navigate to PIM
-            WebElement pimMenu = driver.findElement(By.xpath("//span[text()='PIM']"));
-            pimMenu.click();
-            Thread.sleep(1000);
-            
-            // Add Employee
-            WebElement addEmployee = driver.findElement(By.xpath("//a[text()='Add Employee']"));
-            addEmployee.click();
-            Thread.sleep(1000);
-            
-            // Fill employee details
-            WebElement firstName = driver.findElement(By.name("firstName"));
-            WebElement lastName = driver.findElement(By.name("lastName"));
-            firstName.sendKeys("John");
-            lastName.sendKeys("Doe");
-            driver.findElement(By.xpath("//button[@type='submit']")).click();
-            Thread.sleep(2000);
-            System.out.println("Employee added successfully!");
-
-            // Navigate to Employee List
-            WebElement employeeList = driver.findElement(By.xpath("//a[text()='Employee List']"));
-            employeeList.click();
-            Thread.sleep(1000);
-            
-            // Search for an employee
-            WebElement searchName = driver.findElement(By.xpath("//input[@placeholder='Type for hints...']"));
-            searchName.sendKeys("John");
-            WebElement searchButton = driver.findElement(By.xpath("//button[@type='submit']"));
-            searchButton.click();
-            Thread.sleep(2000);
-            System.out.println("Employee search completed!");
-
-            // Navigate to Leave
-            WebElement leaveMenu = driver.findElement(By.xpath("//span[text()='Leave']"));
-            leaveMenu.click();
-            Thread.sleep(1000);
-            
-            // Apply Leave
-            WebElement applyLeave = driver.findElement(By.xpath("//a[text()='Apply']"));
-            applyLeave.click();
-            Thread.sleep(1000);
-            
-            // Select Leave Type
-            WebElement leaveType = driver.findElement(By.xpath("//div[contains(@class, 'oxd-select-text--after')]"));
-            leaveType.click();
-            Thread.sleep(1000);
-            driver.findElement(By.xpath("//span[contains(text(), 'Vacation')]")).click();
-            Thread.sleep(1000);
-            
-            // Enter leave date
-            WebElement fromDate = driver.findElement(By.xpath("//input[@placeholder='yyyy-mm-dd']"));
-            fromDate.sendKeys("2024-12-25");
-            
-            // Add comment
-            driver.findElement(By.xpath("//textarea")).sendKeys("Vacation Leave");
-            driver.findElement(By.xpath("//button[@type='submit']")).click();
-            Thread.sleep(2000);
-            System.out.println("Leave applied successfully!");
-
-            // Navigate to Recruitment
-            WebElement recruitmentMenu = driver.findElement(By.xpath("//span[text()='Recruitment']"));
-            recruitmentMenu.click();
-            Thread.sleep(1000);
-            
-            // Add Candidate
-            driver.findElement(By.xpath("//button[text()=' Add ']")).click();
-            Thread.sleep(1000);
-            
-            // Fill candidate details
-            driver.findElement(By.name("firstName")).sendKeys("Jane");
-            driver.findElement(By.name("lastName")).sendKeys("Smith");
-            driver.findElement(By.xpath("//input[@placeholder='Type here']")).sendKeys("jane.smith@email.com");
-            driver.findElement(By.xpath("//button[@type='submit']")).click();
-            Thread.sleep(2000);
-            System.out.println("Candidate added successfully!");
-
-            // Navigate to Directory
-            WebElement directoryMenu = driver.findElement(By.xpath("//span[text()='Directory']"));
-            directoryMenu.click();
-            Thread.sleep(1000);
-            
-            // Search Directory
-            WebElement directorySearch = driver.findElement(By.xpath("//input[@placeholder='Type for hints...']"));
-            directorySearch.sendKeys("John");
-            driver.findElement(By.xpath("//button[@type='submit']")).click();
-            Thread.sleep(2000);
-            System.out.println("Directory search completed!");
-
             // Logout
-            driver.findElement(By.className("oxd-userdropdown-tab")).click();
-            Thread.sleep(1000);
-            driver.findElement(By.xpath("//a[text()='Logout']")).click();
-            System.out.println("Logged out successfully!");
+            logout();
             
-            System.out.println("Test completed successfully!");
+            System.out.println("All tests completed successfully!");
             
         } catch (Exception e) {
             System.out.println("Test failed: " + e.getMessage());
             e.printStackTrace();
         } finally {
-            // Close the browser
-            driver.quit();
+            if (driver != null) {
+                driver.quit();
+            }
+        }
+    }
+    
+    private static void login() {
+        try {
+            System.out.println("Starting login process...");
+            
+            WebElement username = wait.until(ExpectedConditions.presenceOfElementLocated(By.name("username")));
+            WebElement password = driver.findElement(By.name("password"));
+            WebElement loginButton = driver.findElement(By.xpath("//button[@type='submit']"));
+            
+            username.clear();
+            username.sendKeys("Admin");
+            password.clear();
+            password.sendKeys("admin123");
+            loginButton.click();
+            
+            // Wait for dashboard to load
+            wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//h6[text()='Dashboard']")));
+            System.out.println("Login successful!");
+            
+        } catch (Exception e) {
+            System.out.println("Login failed: " + e.getMessage());
+            throw e;
+        }
+    }
+    
+    private static void testPIMModule() {
+        try {
+            System.out.println("Testing PIM module...");
+            
+            // Navigate to PIM
+            WebElement pimMenu = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[text()='PIM']")));
+            pimMenu.click();
+            
+            // Add Employee
+            WebElement addEmployee = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[text()='Add Employee']")));
+            addEmployee.click();
+            
+            // Fill employee details
+            WebElement firstName = wait.until(ExpectedConditions.presenceOfElementLocated(By.name("firstName")));
+            WebElement lastName = driver.findElement(By.name("lastName"));
+            
+            firstName.clear();
+            firstName.sendKeys("John");
+            lastName.clear();
+            lastName.sendKeys("Doe");
+            
+            WebElement saveButton = driver.findElement(By.xpath("//button[@type='submit']"));
+            saveButton.click();
+            
+            // Wait for success message or page load
+            Thread.sleep(3000);
+            System.out.println("Employee added successfully!");
+            
+            // Navigate to Employee List
+            WebElement employeeList = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[text()='Employee List']")));
+            employeeList.click();
+            
+            // Search for employee
+            WebElement searchName = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("(//input[@placeholder='Type for hints...'])[1]")));
+            searchName.clear();
+            searchName.sendKeys("John");
+            
+            WebElement searchButton = driver.findElement(By.xpath("//button[@type='submit']"));
+            searchButton.click();
+            
+            Thread.sleep(2000);
+            System.out.println("Employee search completed!");
+            
+        } catch (Exception e) {
+            System.out.println("PIM module test failed: " + e.getMessage());
+        }
+    }
+    
+    private static void testLeaveModule() {
+        try {
+            System.out.println("Testing Leave module...");
+            
+            // Navigate to Leave
+            WebElement leaveMenu = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[text()='Leave']")));
+            leaveMenu.click();
+            
+            // Apply Leave
+            WebElement applyLeave = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[text()='Apply']")));
+            applyLeave.click();
+            
+            // Select Leave Type dropdown
+            WebElement leaveTypeDropdown = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[@class='oxd-select-text oxd-select-text--active']")));
+            leaveTypeDropdown.click();
+            
+            // Select vacation option
+            WebElement vacationOption = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[contains(text(), 'CAN - Vacation')]")));
+            vacationOption.click();
+            
+            // Enter from date
+            WebElement fromDate = driver.findElement(By.xpath("(//input[@placeholder='yyyy-mm-dd'])[1]"));
+            fromDate.clear();
+            fromDate.sendKeys("2024-12-25");
+            
+            // Enter to date
+            WebElement toDate = driver.findElement(By.xpath("(//input[@placeholder='yyyy-mm-dd'])[2]"));
+            toDate.clear();
+            toDate.sendKeys("2024-12-26");
+            
+            // Add comment
+            WebElement comment = driver.findElement(By.xpath("//textarea"));
+            comment.clear();
+            comment.sendKeys("Vacation Leave");
+            
+            // Submit
+            WebElement applyButton = driver.findElement(By.xpath("//button[@type='submit']"));
+            applyButton.click();
+            
+            Thread.sleep(3000);
+            System.out.println("Leave applied successfully!");
+            
+        } catch (Exception e) {
+            System.out.println("Leave module test failed: " + e.getMessage());
+        }
+    }
+    
+    private static void testRecruitmentModule() {
+        try {
+            System.out.println("Testing Recruitment module...");
+            
+            // Navigate to Recruitment
+            WebElement recruitmentMenu = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[text()='Recruitment']")));
+            recruitmentMenu.click();
+            
+            // Add Candidate
+            WebElement addButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(text(),'Add')]")));
+            addButton.click();
+            
+            // Fill candidate details
+            WebElement firstName = wait.until(ExpectedConditions.presenceOfElementLocated(By.name("firstName")));
+            WebElement lastName = driver.findElement(By.name("lastName"));
+            WebElement email = driver.findElement(By.xpath("(//input[@placeholder='Type here'])[1]"));
+            
+            firstName.clear();
+            firstName.sendKeys("Jane");
+            lastName.clear();
+            lastName.sendKeys("Smith");
+            email.clear();
+            email.sendKeys("jane.smith@email.com");
+            
+            // Select vacancy
+            WebElement vacancyDropdown = driver.findElement(By.xpath("(//div[@class='oxd-select-text oxd-select-text--active'])[1]"));
+            vacancyDropdown.click();
+            
+            // Select first available vacancy
+            List<WebElement> vacancyOptions = driver.findElements(By.xpath("//div[@role='option']"));
+            if (!vacancyOptions.isEmpty()) {
+                vacancyOptions.get(0).click();
+            }
+            
+            WebElement saveButton = driver.findElement(By.xpath("//button[@type='submit']"));
+            saveButton.click();
+            
+            Thread.sleep(3000);
+            System.out.println("Candidate added successfully!");
+            
+        } catch (Exception e) {
+            System.out.println("Recruitment module test failed: " + e.getMessage());
+        }
+    }
+    
+    private static void testDirectoryModule() {
+        try {
+            System.out.println("Testing Directory module...");
+            
+            // Navigate to Directory
+            WebElement directoryMenu = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[text()='Directory']")));
+            directoryMenu.click();
+            
+            // Search Directory
+            WebElement directorySearch = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//input[@placeholder='Type for hints...']")));
+            directorySearch.clear();
+            directorySearch.sendKeys("John");
+            
+            WebElement searchButton = driver.findElement(By.xpath("//button[@type='submit']"));
+            searchButton.click();
+            
+            Thread.sleep(2000);
+            System.out.println("Directory search completed!");
+            
+        } catch (Exception e) {
+            System.out.println("Directory module test failed: " + e.getMessage());
+        }
+    }
+    
+    private static void logout() {
+        try {
+            System.out.println("Logging out...");
+            
+            WebElement userDropdown = wait.until(ExpectedConditions.elementToBeClickable(By.className("oxd-userdropdown-tab")));
+            userDropdown.click();
+            
+            WebElement logoutLink = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[text()='Logout']")));
+            logoutLink.click();
+            
+            // Wait for login page to load
+            wait.until(ExpectedConditions.presenceOfElementLocated(By.name("username")));
+            System.out.println("Logged out successfully!");
+            
+        } catch (Exception e) {
+            System.out.println("Logout failed: " + e.getMessage());
         }
     }
 }
