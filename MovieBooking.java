@@ -88,7 +88,7 @@ public class MovieBooking {
 
             // Enter email - Fixed the XPath
             WebElement emailInput = wait.until(ExpectedConditions.elementToBeClickable(
-                By.xpath("//input[@type='devrajjoshi0906@gmail.com'] | //input[@id='identifierId']")));
+                By.xpath("//input[@type='Enter your email id '] | //input[@id='identifierId']")));
             emailInput.clear();
             emailInput.sendKeys(EMAIL);
             System.out.println("Entered email");
